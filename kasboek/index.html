@@ -1,0 +1,641 @@
+<title>Zzp Kasboek</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Schibsted+Grotesk:wght@600;700&display=swap">
+<style>
+/* Layout: één kolom kasboek. Kop met jaarkeuze, vier tabbladen. Overzicht opent met de KOR-meter, daarna cijfers, maandgrafiek en kostensoorten. De overige tabbladen zijn een invoerregel boven een tabel. */
+:root{
+  --bg:#F0F2F1;
+  --surface:#FFFFFF;
+  --ink:#15201E;
+  --ink-2:#4A5856;
+  --line:#D5DBD9;
+  --accent:#2340A8;
+  --accent-ink:#FFFFFF;
+  --wash:#E4E9F8;
+  --bar2:#9AA9A5;
+  --good:#1E7A4F; --good-bg:#DDF1E6;
+  --warn:#9A5B00; --warn-bg:#FBEBCB;
+  --bad:#B3261E;  --bad-bg:#FADAD7;
+  --display:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;
+  --body:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1514; --surface:#172120; --ink:#E7EEEC; --ink-2:#9FB0AC; --line:#2A3836;
+    --accent:#8FA6FF; --accent-ink:#0F1514; --wash:#1D2742; --bar2:#5F7370;
+    --good:#5CCB94; --good-bg:#17342A; --warn:#E7A94A; --warn-bg:#3A2D12; --bad:#F28B82; --bad-bg:#3E1E1C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --surface:#172120; --ink:#E7EEEC; --ink-2:#9FB0AC; --line:#2A3836;
+  --accent:#8FA6FF; --accent-ink:#0F1514; --wash:#1D2742; --bar2:#5F7370;
+  --good:#5CCB94; --good-bg:#17342A; --warn:#E7A94A; --warn-bg:#3A2D12; --bad:#F28B82; --bad-bg:#3E1E1C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);
+  padding-block:20px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+h2{font-size:1.2rem;font-weight:600}
+h3{font-size:.95rem;font-weight:600}
+p{margin:0}
+.fig{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.lbl{display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+
+/* kop */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;margin-bottom:18px}
+.brand h1{font-size:1.9rem;font-weight:700;letter-spacing:-.01em}
+.brand p{color:var(--ink-2);font-size:.85rem;margin-top:2px}
+.tools{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.sel{display:flex;flex-direction:column;gap:2px}
+
+/* formulierelementen */
+input,select{
+  font:inherit;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:6px;min-height:40px;padding:6px 10px;width:100%;min-width:0;
+}
+input[type=checkbox]{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
+input:focus-visible,select:focus-visible,.btn:focus-visible,.tabs a:focus-visible,.link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{
+  font:inherit;font-weight:500;min-height:40px;padding:6px 16px;border-radius:6px;cursor:pointer;
+  background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);
+}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.55;cursor:default}
+.link{font:inherit;font-size:.85rem;background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 6px;border-radius:4px}
+.link.danger{color:var(--bad)}
+
+/* tabbladen */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}
+.tabs a{
+  color:var(--ink-2);text-decoration:none;padding:10px 14px;font-weight:500;white-space:nowrap;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.count{font-family:var(--mono);font-size:.75rem;color:var(--ink-2);margin-left:4px}
+
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:10px 14px;margin-bottom:18px;font-size:.9rem}
+
+/* KOR-meter */
+.kor{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.kor-head{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:space-between;align-items:center}
+.pill{font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:4px;background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.kor-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px 20px}
+.kor-nums strong{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500;font-size:1.55rem;display:block;line-height:1.2}
+.meter{position:relative;height:16px;border-radius:8px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--good);transition:width .4s ease}
+.fill.warn{background:var(--warn)}
+.fill.bad{background:var(--bad)}
+.scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.72rem;color:var(--ink-2);margin-top:-8px}
+.kor .note{color:var(--ink-2);font-size:.88rem;max-width:68ch}
+.regions{font-size:.85rem;color:var(--ink-2)}
+.regions b{font-weight:500;color:var(--ink)}
+
+/* cijfers */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:26px 0 8px}
+.stat{padding:4px 20px 4px 0;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat strong{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500;font-size:1.35rem}
+.stat strong.neg{color:var(--bad)}
+.stat small{color:var(--ink-2);font-size:.8rem}
+
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px 36px;margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.sec{display:flex;flex-direction:column;gap:12px;min-width:0}
+.legend{display:flex;gap:16px;font-size:.82rem;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+svg.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ct{font:12px var(--mono);fill:var(--ink-2)}
+.chart .empty{font:13px var(--body);fill:var(--ink-2)}
+.cats{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.cats li{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:.9rem}
+.cats .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--bg);overflow:hidden}
+.cats .bar span{display:block;height:100%;background:var(--bar2);border-radius:3px}
+.empty-note{color:var(--ink-2);font-size:.9rem}
+
+/* invoer en tabellen */
+.lead{color:var(--ink-2);max-width:68ch;margin:-8px 0 18px}
+.form{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:10px;
+}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label{font-size:.8rem;color:var(--ink-2);font-weight:500}
+.f.check{flex-direction:row;align-items:center;gap:8px;align-self:end;min-height:40px}
+.f.check label{color:var(--ink);font-size:.9rem}
+.span2{grid-column:span 2}
+@media (max-width:340px){.span2{grid-column:auto}}
+.actions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.err{grid-column:1/-1;color:var(--bad);font-size:.88rem}
+.hint{color:var(--ink-2);font-size:.85rem;max-width:72ch;margin-bottom:22px}
+.hint.warn{color:var(--warn)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{
+  text-align:left;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:500;
+  padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tfoot td{border-top:1px solid var(--ink-2);border-bottom:0;font-weight:500}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+th.n{font-family:var(--body)}
+td.d{white-space:nowrap;color:var(--ink-2)}
+td .sub{display:block;color:var(--ink-2);font-size:.82rem}
+td.act{text-align:right;white-space:nowrap}
+.tag{font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warn-bg);color:var(--warn);white-space:nowrap}
+.tag.ok{background:var(--good-bg);color:var(--good)}
+.emptyrow td{color:var(--ink-2);padding:28px 16px;text-align:center}
+.sumline{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:10px;font-size:.9rem;color:var(--ink-2)}
+.sumline b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Kasboek</h1>
+      <p>Eenmanszaak met kleineondernemersregeling</p>
+    </div>
+    <div class="tools">
+      <div class="sel"><label class="lbl" for="yr">Jaar</label><select id="yr" aria-label="Boekjaar"></select></div>
+      <button class="btn ghost" id="export" type="button" hidden>Exporteer CSV</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" role="status" hidden></div>
+
+  <nav class="tabs" aria-label="Onderdelen">
+    <a href="#overzicht" data-tab="overzicht">Overzicht</a>
+    <a href="#inkomsten" data-tab="inkomsten">Inkomsten<span class="count" id="n-inc"></span></a>
+    <a href="#uitgaven" data-tab="uitgaven">Uitgaven<span class="count" id="n-exp"></span></a>
+    <a href="#uren" data-tab="uren">Uren<span class="count" id="n-hrs"></span></a>
+  </nav>
+
+  <!-- OVERZICHT -->
+  <section id="p-overzicht" data-panel="overzicht">
+    <div class="kor">
+      <div class="kor-head">
+        <h2 id="korTitle">KOR-grens</h2>
+        <span id="korState" class="pill">Ruim binnen de grens</span>
+      </div>
+      <div class="kor-nums">
+        <div><span class="lbl">Omzet dit jaar</span><strong id="korOmzet">€ 0,00</strong></div>
+        <div><span class="lbl" id="korRestLbl">Nog ruimte</span><strong id="korRest">€ 20.000,00</strong></div>
+        <div><span class="lbl">Grens per kalenderjaar</span><strong>€ 20.000</strong></div>
+      </div>
+      <div>
+        <div class="meter" role="img" id="korMeter" aria-label="Omzet ten opzichte van de KOR-grens"><div class="fill" id="korFill"></div></div>
+        <div class="scale" aria-hidden="true"><span>€0</span><span>€5.000</span><span>€10.000</span><span>€15.000</span><span>€20.000</span></div>
+      </div>
+      <p class="note" id="korNote"></p>
+      <p class="regions" id="regions" hidden></p>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="two">
+      <div class="sec">
+        <h3>Omzet en kosten per maand</h3>
+        <div class="legend"><span><i style="background:var(--accent)"></i>Omzet</span><span><i style="background:var(--bar2)"></i>Kosten</span></div>
+        <div id="chart"></div>
+      </div>
+      <div class="sec">
+        <h3>Kosten per soort</h3>
+        <ul class="cats" id="cats"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- INKOMSTEN -->
+  <section id="p-inkomsten" data-panel="inkomsten" hidden>
+    <p class="lead">Boek hier je verkopen. Omdat je de KOR gebruikt, staat er geen btw in je omzet.</p>
+    <form id="f-inc" class="form" novalidate>
+      <div class="f"><label for="i-date">Datum</label><input id="i-date" type="date"></div>
+      <div class="f span2"><label for="i-desc">Omschrijving</label><input id="i-desc" type="text" placeholder="Shopify-uitbetaling, bestelling of factuur" autocomplete="off"></div>
+      <div class="f"><label for="i-ref">Bestelling of factuur</label><input id="i-ref" type="text" placeholder="#1042" autocomplete="off"></div>
+      <div class="f"><label for="i-gross">Bruto omzet (€)</label><input id="i-gross" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+      <div class="f"><label for="i-fee">Transactiekosten (€)</label><input id="i-fee" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+      <div class="f"><label for="i-region">Klant in</label>
+        <select id="i-region"><option value="NL">Nederland</option><option value="EU">Andere EU-landen</option><option value="WORLD">Buiten de EU</option></select>
+      </div>
+      <div class="actions"><button class="btn" type="submit">Toevoegen</button><button class="btn ghost" type="button" data-cancel hidden>Annuleren</button></div>
+      <p class="err" role="alert" hidden></p>
+    </form>
+    <p class="hint">Vul de bruto omzet in: wat je klant betaalde. Je Shopify-uitbetaling is lager, want Shopify en je betaalprovider houden kosten in. Zet die kosten in het veld transactiekosten, dan tellen ze mee als uitgave. Gebruik een negatief bedrag voor een terugbetaling.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Datum</th><th>Omschrijving</th><th>Klant in</th><th class="n">Omzet</th><th class="n">Kosten</th><th></th></tr></thead>
+      <tbody id="t-inc"></tbody>
+      <tfoot id="tf-inc"></tfoot>
+    </table></div>
+  </section>
+
+  <!-- UITGAVEN -->
+  <section id="p-uitgaven" data-panel="uitgaven" hidden>
+    <p class="lead">Boek hier je zakelijke kosten. Zonder btw-aftrek is het bedrag inclusief btw je kostenpost.</p>
+    <form id="f-exp" class="form" novalidate>
+      <div class="f"><label for="e-date">Datum</label><input id="e-date" type="date"></div>
+      <div class="f"><label for="e-vendor">Leverancier</label><input id="e-vendor" type="text" placeholder="Shopify" autocomplete="off"></div>
+      <div class="f span2"><label for="e-desc">Omschrijving</label><input id="e-desc" type="text" placeholder="Abonnement november" autocomplete="off"></div>
+      <div class="f"><label for="e-amount">Bedrag incl. btw (€)</label><input id="e-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+      <div class="f"><label for="e-cat">Soort</label><select id="e-cat"></select></div>
+      <div class="f"><label for="e-pct">Zakelijk (%)</label><input id="e-pct" type="number" min="1" max="100" step="1" value="100" inputmode="numeric"></div>
+      <div class="f check"><input id="e-receipt" type="checkbox" checked><label for="e-receipt">Bon of factuur bewaard</label></div>
+      <div class="actions"><button class="btn" type="submit">Toevoegen</button><button class="btn ghost" type="button" data-cancel hidden>Annuleren</button></div>
+      <p class="err" role="alert" hidden></p>
+    </form>
+    <p class="hint" id="expHint">Gebruik je iets ook privé, zoals een laptop of telefoon, vul dan alleen het zakelijke percentage in. Bewaar bonnen en facturen zeven jaar.</p>
+    <div class="sumline" id="expSum"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Datum</th><th>Leverancier</th><th>Soort</th><th class="n">Bedrag</th><th class="n">Zakelijk</th><th>Bon</th><th></th></tr></thead>
+      <tbody id="t-exp"></tbody>
+      <tfoot id="tf-exp"></tfoot>
+    </table></div>
+  </section>
+
+  <!-- UREN -->
+  <section id="p-uren" data-panel="uren" hidden>
+    <p class="lead">Houd bij hoeveel tijd je aan je onderneming besteedt. Met een baan van 32 uur is dit geen voorwaarde voor een aftrek, maar het laat zien dat je actief onderneemt.</p>
+    <form id="f-hrs" class="form" novalidate>
+      <div class="f"><label for="h-date">Datum</label><input id="h-date" type="date"></div>
+      <div class="f"><label for="h-hours">Uren</label><input id="h-hours" type="text" inputmode="decimal" placeholder="1,5" autocomplete="off"></div>
+      <div class="f"><label for="h-act">Activiteit</label><select id="h-act"></select></div>
+      <div class="f span2"><label for="h-note">Opmerking</label><input id="h-note" type="text" placeholder="Bijv. nieuwe productfoto's gemaakt" autocomplete="off"></div>
+      <div class="actions"><button class="btn" type="submit">Toevoegen</button><button class="btn ghost" type="button" data-cancel hidden>Annuleren</button></div>
+      <p class="err" role="alert" hidden></p>
+    </form>
+    <div class="sumline" id="hrsSum"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Datum</th><th>Activiteit</th><th>Opmerking</th><th class="n">Uren</th><th></th></tr></thead>
+      <tbody id="t-hrs"></tbody>
+      <tfoot id="tf-hrs"></tfoot>
+    </table></div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var NOW=new Date(), THIS_YEAR=NOW.getFullYear();
+var eur=new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'});
+var eur0=new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+var dec=new Intl.NumberFormat('nl-NL',{maximumFractionDigits:2});
+var KOR=20000;
+var CATS=['Software en abonnementen','Inkoop voorraad','Verpakking en verzending','Marketing','Apparatuur','Bankkosten','Advies en administratie','Overig'];
+var ACTS=['Inkoop','Productfoto’s en teksten','Webshop inrichten','Marketing','Administratie','Klantcontact','Cursus of leren','Overig'];
+var REGIONS={NL:'Nederland',EU:'Andere EU-landen',WORLD:'Buiten de EU'};
+var MONTHS=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+var FEE_LABEL='Transactiekosten (Shopify, betaalprovider)';
+var TABS=['overzicht','inkomsten','uitgaven','uren'];
+
+var state={entries:[],year:THIS_YEAR,tab:'overzicht',editing:{inc:null,exp:null,hrs:null},confirm:null,loaded:false,col:null,banner:'',busy:false,storage:false};
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function parseAmount(v){
+  var s=String(v==null?'':v).trim().replace(/[€\s]/g,'');
+  if(!s) return NaN;
+  if(s.indexOf(',')>-1) s=s.replace(/\./g,'').replace(',','.');
+  else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,'');
+  var n=Number(s);
+  return isFinite(n)?Math.round(n*100)/100:NaN;
+}
+function toField(n){return String(n).replace('.',',')}
+function todayISO(){return new Date(NOW.getTime()-NOW.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function fmtDate(iso){
+  var d=new Date(iso+'T00:00:00Z');
+  if(isNaN(d)) return esc(iso);
+  return d.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+}
+function yearOf(e){return Number(String(e.date||'').slice(0,4))}
+function sum(a,f){return a.reduce(function(t,x){return t+f(x)},0)}
+function niceMax(v){
+  if(!(v>0)) return 100;
+  var m=Math.pow(10,Math.floor(Math.log10(v))), c=[1,2,2.5,5,10];
+  for(var i=0;i<c.length;i++){ if(c[i]*m>=v) return c[i]*m; }
+  return 10*m;
+}
+function bySort(a,b){ return a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0); }
+
+function compute(y){
+  var inc=state.entries.filter(function(e){return e.type==='inc'&&yearOf(e)===y}).sort(bySort);
+  var exp=state.entries.filter(function(e){return e.type==='exp'&&yearOf(e)===y}).sort(bySort);
+  var hrs=state.entries.filter(function(e){return e.type==='hrs'&&yearOf(e)===y}).sort(bySort);
+  var c={inc:inc,exp:exp,hrs:hrs,mOm:[],mCost:[],cats:{},regions:{NL:0,EU:0,WORLD:0}};
+  for(var i=0;i<12;i++){c.mOm.push(0);c.mCost.push(0)}
+  c.omzet=0;c.fees=0;c.expCost=0;
+  inc.forEach(function(e){
+    var m=Number(String(e.date).slice(5,7))-1, g=Number(e.gross)||0, f=Number(e.fee)||0;
+    c.omzet+=g; c.fees+=f;
+    if(m>=0&&m<12){c.mOm[m]+=g;c.mCost[m]+=f}
+    c.regions[e.region]=(c.regions[e.region]||0)+g;
+    if(f) c.cats[FEE_LABEL]=(c.cats[FEE_LABEL]||0)+f;
+  });
+  exp.forEach(function(e){
+    var m=Number(String(e.date).slice(5,7))-1, v=(Number(e.amount)||0)*((Number(e.bizPct)||100)/100);
+    c.expCost+=v;
+    if(m>=0&&m<12) c.mCost[m]+=v;
+    c.cats[e.cat||'Overig']=(c.cats[e.cat||'Overig']||0)+v;
+  });
+  c.kosten=c.expCost+c.fees;
+  c.winst=c.omzet-c.kosten;
+  c.hours=sum(hrs,function(e){return Number(e.hours)||0});
+  return c;
+}
+
+/* ---------- weergave ---------- */
+function renderYears(){
+  var ys={}; ys[THIS_YEAR]=1; ys[THIS_YEAR-1]=1; ys[state.year]=1;
+  state.entries.forEach(function(e){var y=yearOf(e); if(y) ys[y]=1});
+  var list=Object.keys(ys).map(Number).sort(function(a,b){return b-a});
+  var sel=$('#yr');
+  sel.innerHTML=list.map(function(y){return '<option value="'+y+'"'+(y===state.year?' selected':'')+'>'+y+'</option>'}).join('');
+}
+function renderOverview(c){
+  var pct=c.omzet/KOR*100, rest=KOR-c.omzet;
+  var level=pct>100?'bad':pct>=90?'bad':pct>=75?'warn':'';
+  $('#korTitle').textContent='KOR-grens '+state.year;
+  $('#korOmzet').textContent=eur.format(c.omzet);
+  $('#korRestLbl').textContent=rest>=0?'Nog ruimte':'Boven de grens';
+  $('#korRest').textContent=eur.format(Math.abs(rest));
+  var pill=$('#korState');
+  pill.className='pill'+(level?' '+level:'');
+  pill.textContent=pct>100?'Grens overschreden':pct>=90?'Bijna bij de grens':pct>=75?'Let op':'Ruim binnen de grens';
+  var fill=$('#korFill');
+  fill.className='fill'+(level?' '+level:'');
+  fill.style.width=Math.min(100,Math.max(0,pct))+'%';
+  $('#korMeter').setAttribute('aria-label','Omzet '+eur0.format(c.omzet)+' van '+eur0.format(KOR)+' ('+Math.round(Math.max(0,pct))+'%)');
+  $('#korNote').textContent=pct>100
+    ? 'Je omzet is boven € 20.000 uitgekomen. Controleer bij de Belastingdienst vanaf welk moment je btw moet berekenen en de KOR moet stopzetten.'
+    : pct>=75
+    ? 'Je nadert € 20.000. Boven die grens stopt de KOR en reken je btw door. Houd je verkopen goed in de gaten.'
+    : 'Omzet is je bruto verkoop in dit kalenderjaar, zonder btw. Alle omzet van je onderneming telt mee.';
+  var rg=$('#regions');
+  if(c.omzet>0){
+    rg.hidden=false;
+    rg.innerHTML='Omzet naar klant: '+Object.keys(REGIONS).filter(function(k){return c.regions[k]}).map(function(k){return REGIONS[k]+' <b class="fig">'+eur.format(c.regions[k])+'</b>'}).join(' · ');
+  } else rg.hidden=true;
+
+  var reserve=c.winst>0?eur0.format(c.winst*0.35)+' – '+eur0.format(c.winst*0.40):eur0.format(0);
+  $('#stats').innerHTML=
+    '<div class="stat"><span class="lbl">Omzet</span><strong>'+eur.format(c.omzet)+'</strong><small>'+c.inc.length+' boekingen</small></div>'+
+    '<div class="stat"><span class="lbl">Kosten</span><strong>'+eur.format(c.kosten)+'</strong><small>zakelijk deel, inclusief transactiekosten</small></div>'+
+    '<div class="stat"><span class="lbl">Winst</span><strong class="'+(c.winst<0?'neg':'')+'">'+eur.format(c.winst)+'</strong><small>'+(c.winst<0?'een verlies verreken je in de aangifte met je loon':'omzet min kosten')+'</small></div>'+
+    '<div class="stat"><span class="lbl">Opzij zetten voor belasting</span><strong>'+reserve+'</strong><small>grove schatting, 35 tot 40% van de winst, zonder MKB-winstvrijstelling</small></div>';
+  $('#chart').innerHTML=chartSvg(c);
+  var keys=Object.keys(c.cats).sort(function(a,b){return c.cats[b]-c.cats[a]});
+  var mx=keys.length?c.cats[keys[0]]:0;
+  $('#cats').innerHTML=keys.length?keys.map(function(k){
+    return '<li><span>'+esc(k)+'</span><span class="fig">'+eur.format(c.cats[k])+'</span><div class="bar"><span style="width:'+(mx>0?Math.max(2,c.cats[k]/mx*100):0)+'%"></span></div></li>';
+  }).join(''):'<li class="empty-note" style="display:block">Nog geen kosten in '+state.year+'. Boek je eerste uitgave bij het tabblad Uitgaven.</li>';
+}
+function chartSvg(c){
+  var W=520,H=240,L=46,R=6,T=14,B=28,pw=W-L-R,ph=H-T-B;
+  var mx=niceMax(Math.max.apply(null,c.mOm.concat(c.mCost)));
+  var s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Omzet en kosten per maand in '+state.year+'">';
+  for(var i=0;i<=4;i++){
+    var t=mx*i/4, y=T+ph-(t/mx)*ph;
+    var lab=t>=1000?(t/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+'k':String(Math.round(t));
+    s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text class="ct" x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end">'+lab+'</text>';
+  }
+  var gw=pw/12, bw=Math.min(16,gw*0.34);
+  for(var m=0;m<12;m++){
+    var x0=L+gw*m+gw/2;
+    var ho=Math.max(0,c.mOm[m])/mx*ph, hk=Math.max(0,c.mCost[m])/mx*ph;
+    if(ho>0) s+='<rect x="'+(x0-bw-1)+'" y="'+(T+ph-Math.max(ho,1.5))+'" width="'+bw+'" height="'+Math.max(ho,1.5)+'" rx="2" fill="var(--accent)"/>';
+    if(hk>0) s+='<rect x="'+(x0+1)+'" y="'+(T+ph-Math.max(hk,1.5))+'" width="'+bw+'" height="'+Math.max(hk,1.5)+'" rx="2" fill="var(--bar2)"/>';
+    s+='<text class="ct" x="'+x0+'" y="'+(H-8)+'" text-anchor="middle">'+MONTHS[m]+'</text>';
+  }
+  if(!c.omzet&&!c.kosten) s+='<text class="empty" x="'+(L+pw/2)+'" y="'+(T+ph/2)+'" text-anchor="middle">Nog geen cijfers voor '+state.year+'</text>';
+  return s+'</svg>';
+}
+function actions(e){
+  if(state.confirm===e.id) return '<span class="muted" style="font-size:.85rem">Zeker?</span> <button class="link danger" data-act="delyes" data-id="'+esc(e.id)+'" type="button">Ja, verwijder</button><button class="link" data-act="delno" type="button">Nee</button>';
+  return '<button class="link" data-act="edit" data-id="'+esc(e.id)+'" type="button">Wijzig</button><button class="link danger" data-act="del" data-id="'+esc(e.id)+'" type="button">Verwijder</button>';
+}
+function emptyRow(cols,txt){return '<tr class="emptyrow"><td colspan="'+cols+'">'+txt+'</td></tr>'}
+function renderTables(c){
+  $('#t-inc').innerHTML=c.inc.length?c.inc.map(function(e){
+    var net=(Number(e.gross)||0)-(Number(e.fee)||0);
+    return '<tr><td class="d">'+fmtDate(e.date)+'</td><td>'+esc(e.desc||'Verkoop')+(e.ref?'<span class="sub">'+esc(e.ref)+'</span>':'')+'</td><td class="d">'+esc(REGIONS[e.region]||'')+'</td><td class="n">'+eur.format(Number(e.gross)||0)+'</td><td class="n">'+(Number(e.fee)?eur.format(Number(e.fee)):'')+'</td><td class="act">'+actions(e)+'</td></tr>';
+  }).join(''):emptyRow(6,state.loaded?'Nog geen inkomsten in '+state.year+'. Voeg hierboven je eerste verkoop of uitbetaling toe.':'Gegevens laden…');
+  $('#tf-inc').innerHTML=c.inc.length?'<tr><td colspan="3">Totaal '+state.year+'</td><td class="n">'+eur.format(c.omzet)+'</td><td class="n">'+eur.format(c.fees)+'</td><td></td></tr>':'';
+
+  var missing=c.exp.filter(function(e){return !e.receipt}).length;
+  $('#expSum').innerHTML=c.exp.length?'<span>Zakelijke kosten <b>'+eur.format(c.expCost)+'</b></span><span>'+(missing?'<b>'+missing+'</b> zonder bon of factuur':'Alle bonnen bewaard')+'</span>':'';
+  $('#t-exp').innerHTML=c.exp.length?c.exp.map(function(e){
+    var amt=Number(e.amount)||0, pct=Number(e.bizPct)||100;
+    return '<tr><td class="d">'+fmtDate(e.date)+'</td><td>'+esc(e.vendor||'')+(e.desc?'<span class="sub">'+esc(e.desc)+'</span>':'')+'</td><td class="d">'+esc(e.cat||'')+'</td><td class="n">'+eur.format(amt)+'</td><td class="n">'+eur.format(amt*pct/100)+(pct<100?'<span class="sub">'+pct+'%</span>':'')+'</td><td>'+(e.receipt?'<span class="tag ok">Bewaard</span>':'<span class="tag">Ontbreekt</span>')+'</td><td class="act">'+actions(e)+'</td></tr>';
+  }).join(''):emptyRow(7,state.loaded?'Nog geen uitgaven in '+state.year+'. Voeg hierboven je eerste kostenpost toe, bijvoorbeeld je Shopify-abonnement.':'Gegevens laden…');
+  $('#tf-exp').innerHTML=c.exp.length?'<tr><td colspan="3">Totaal '+state.year+'</td><td class="n">'+eur.format(sum(c.exp,function(e){return Number(e.amount)||0}))+'</td><td class="n">'+eur.format(c.expCost)+'</td><td colspan="2"></td></tr>':'';
+
+  $('#hrsSum').innerHTML=c.hrs.length?'<span>Totaal '+state.year+' <b>'+dec.format(c.hours)+' uur</b></span>':'';
+  $('#t-hrs').innerHTML=c.hrs.length?c.hrs.map(function(e){
+    return '<tr><td class="d">'+fmtDate(e.date)+'</td><td>'+esc(e.act||'')+'</td><td class="muted">'+esc(e.note||'')+'</td><td class="n">'+dec.format(Number(e.hours)||0)+'</td><td class="act">'+actions(e)+'</td></tr>';
+  }).join(''):emptyRow(5,state.loaded?'Nog geen uren in '+state.year+'. Voeg hierboven je eerste werkdag voor de webshop toe.':'Gegevens laden…');
+  $('#tf-hrs').innerHTML=c.hrs.length?'<tr><td colspan="3">Totaal '+state.year+'</td><td class="n">'+dec.format(c.hours)+'</td><td></td></tr>':'';
+}
+function renderTabs(c){
+  $$('.tabs a').forEach(function(a){ if(a.dataset.tab===state.tab) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  $$('[data-panel]').forEach(function(p){p.hidden=p.dataset.panel!==state.tab});
+  $('#n-inc').textContent=c.inc.length||'';
+  $('#n-exp').textContent=c.exp.length||'';
+  $('#n-hrs').textContent=c.hrs.length||'';
+}
+function renderBanner(){
+  var b=$('#banner');
+  if(state.banner){b.textContent=state.banner;b.hidden=false}else b.hidden=true;
+}
+function render(){
+  renderYears();
+  var c=compute(state.year);
+  renderTabs(c); renderOverview(c); renderTables(c); renderBanner();
+}
+
+/* ---------- invoer ---------- */
+function showErr(form,msg){var p=$('.err',form); if(msg){p.textContent=msg;p.hidden=false}else p.hidden=true}
+var KINDS={
+  inc:{
+    form:'#f-inc',
+    read:function(){
+      var date=$('#i-date').value, gross=parseAmount($('#i-gross').value), feeRaw=$('#i-fee').value.trim(), fee=feeRaw?parseAmount(feeRaw):0;
+      if(!date) return {error:'Kies een datum.'};
+      if(isNaN(gross)) return {error:'Vul de bruto omzet in als bedrag, bijvoorbeeld 49,95.'};
+      if(isNaN(fee)||fee<0) return {error:'Vul de transactiekosten in als bedrag van 0 of meer, of laat het veld leeg.'};
+      return {data:{date:date,desc:$('#i-desc').value.trim(),ref:$('#i-ref').value.trim(),gross:gross,fee:fee,region:$('#i-region').value}};
+    },
+    fill:function(e){$('#i-date').value=e.date;$('#i-desc').value=e.desc||'';$('#i-ref').value=e.ref||'';$('#i-gross').value=toField(e.gross);$('#i-fee').value=e.fee?toField(e.fee):'';$('#i-region').value=e.region||'NL'},
+    clear:function(){$('#i-desc').value='';$('#i-ref').value='';$('#i-gross').value='';$('#i-fee').value=''}
+  },
+  exp:{
+    form:'#f-exp',
+    read:function(){
+      var date=$('#e-date').value, amt=parseAmount($('#e-amount').value), pct=Number($('#e-pct').value);
+      if(!date) return {error:'Kies een datum.'};
+      if(isNaN(amt)||amt<=0) return {error:'Vul het bedrag in als bedrag boven 0, bijvoorbeeld 36,00.'};
+      if(!(pct>=1&&pct<=100)) return {error:'Het zakelijke percentage ligt tussen 1 en 100.'};
+      return {data:{date:date,vendor:$('#e-vendor').value.trim(),desc:$('#e-desc').value.trim(),amount:amt,cat:$('#e-cat').value,bizPct:Math.round(pct),receipt:$('#e-receipt').checked}};
+    },
+    fill:function(e){$('#e-date').value=e.date;$('#e-vendor').value=e.vendor||'';$('#e-desc').value=e.desc||'';$('#e-amount').value=toField(e.amount);$('#e-cat').value=e.cat||'Overig';$('#e-pct').value=e.bizPct||100;$('#e-receipt').checked=!!e.receipt;hintExp()},
+    clear:function(){$('#e-vendor').value='';$('#e-desc').value='';$('#e-amount').value='';$('#e-pct').value=100;$('#e-receipt').checked=true;hintExp()}
+  },
+  hrs:{
+    form:'#f-hrs',
+    read:function(){
+      var date=$('#h-date').value, h=parseAmount($('#h-hours').value);
+      if(!date) return {error:'Kies een datum.'};
+      if(isNaN(h)||h<=0||h>24) return {error:'Vul de uren in tussen 0 en 24, bijvoorbeeld 1,5.'};
+      return {data:{date:date,hours:h,act:$('#h-act').value,note:$('#h-note').value.trim()}};
+    },
+    fill:function(e){$('#h-date').value=e.date;$('#h-hours').value=toField(e.hours);$('#h-act').value=e.act||'Overig';$('#h-note').value=e.note||''},
+    clear:function(){$('#h-hours').value='';$('#h-note').value=''}
+  }
+};
+function hintExp(){
+  var h=$('#expHint'), amt=parseAmount($('#e-amount').value), cat=$('#e-cat').value;
+  if(cat==='Apparatuur'&&amt>450){
+    h.className='hint warn';
+    h.textContent='Apparatuur boven € 450 per stuk schrijf je meestal over meerdere jaren af in plaats van in één keer af te trekken. Controleer dit bij de Belastingdienst.';
+  } else {
+    h.className='hint';
+    h.textContent='Gebruik je iets ook privé, zoals een laptop of telefoon, vul dan alleen het zakelijke percentage in. Bewaar bonnen en facturen zeven jaar.';
+  }
+}
+function setEditing(kind,id){
+  state.editing[kind]=id;
+  var f=$(KINDS[kind].form);
+  $('button[type=submit]',f).textContent=id?'Opslaan':'Toevoegen';
+  $('[data-cancel]',f).hidden=!id;
+}
+async function save(kind,data,id){
+  if(!state.col) throw new Error('nostore');
+  var old=id?state.entries.filter(function(e){return e.id===id})[0]:null;
+  var ref=id?state.col.doc(id):state.col.doc();
+  var body=Object.assign({},data,{type:kind,createdAt:old&&old.createdAt?old.createdAt:Date.now()});
+  await ref.set(body);
+}
+function bindForm(kind){
+  var K=KINDS[kind], f=$(K.form);
+  f.addEventListener('submit',async function(ev){
+    ev.preventDefault();
+    if(state.busy) return;
+    var r=K.read();
+    if(r.error){showErr(f,r.error);return}
+    if(!state.storage){showErr(f,'Opslaan is niet beschikbaar in deze weergave. Open de pagina in Claude om je gegevens te bewaren.');return}
+    showErr(f,'');
+    state.busy=true;
+    var btn=$('button[type=submit]',f); btn.disabled=true;
+    try{
+      await save(kind,r.data,state.editing[kind]);
+      var y=Number(r.data.date.slice(0,4)); if(y) state.year=y;
+      setEditing(kind,null); K.clear();
+      render();
+    }catch(e){
+      showErr(f,'Opslaan lukte niet. Probeer het over een paar seconden opnieuw.');
+    }finally{ state.busy=false; btn.disabled=false; }
+  });
+  $('[data-cancel]',f).addEventListener('click',function(){setEditing(kind,null);K.clear();showErr(f,'')});
+}
+function bindTable(kind,sel){
+  $(sel).addEventListener('click',async function(ev){
+    var b=ev.target.closest('button[data-act]'); if(!b) return;
+    var act=b.dataset.act, id=b.dataset.id;
+    if(act==='edit'){
+      var e=state.entries.filter(function(x){return x.id===id})[0]; if(!e) return;
+      KINDS[kind].fill(e); setEditing(kind,id); showErr($(KINDS[kind].form),'');
+      $(KINDS[kind].form).scrollIntoView({block:'nearest',behavior:'smooth'});
+    } else if(act==='del'){ state.confirm=id; render(); }
+    else if(act==='delno'){ state.confirm=null; render(); }
+    else if(act==='delyes'){
+      if(!state.col||state.busy) return;
+      state.busy=true;
+      try{ await state.col.doc(id).delete(); if(state.editing[kind]===id){setEditing(kind,null);KINDS[kind].clear()} state.confirm=null; render(); }
+      catch(e){ state.banner='Verwijderen lukte niet. Probeer het opnieuw.'; render(); }
+      finally{ state.busy=false; }
+    }
+  });
+}
+
+/* ---------- export ---------- */
+function csvCell(v){var s=String(v==null?'':v); return /[";\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function csvNum(n){return String(Math.round((Number(n)||0)*100)/100).replace('.',',')}
+function buildCsv(){
+  var c=compute(state.year);
+  var rows=[['Soort','Datum','Omschrijving','Leverancier of bestelling','Soort kosten of activiteit','Bedrag','Zakelijk %','Zakelijk bedrag','Transactiekosten','Klant in','Uren','Bon bewaard']];
+  c.inc.slice().reverse().forEach(function(e){rows.push(['Inkomst',e.date,e.desc||'',e.ref||'','',csvNum(e.gross),'','',csvNum(e.fee),REGIONS[e.region]||'','',''])});
+  c.exp.slice().reverse().forEach(function(e){var p=Number(e.bizPct)||100;rows.push(['Uitgave',e.date,e.desc||'',e.vendor||'',e.cat||'',csvNum(e.amount),p,csvNum((Number(e.amount)||0)*p/100),'','','',e.receipt?'ja':'nee'])});
+  c.hrs.slice().reverse().forEach(function(e){rows.push(['Uren',e.date,e.note||'','',e.act||'','','','','','',csvNum(e.hours),''])});
+  return '﻿'+rows.map(function(r){return r.map(csvCell).join(';')}).join('\r\n');
+}
+
+/* ---------- start ---------- */
+function route(){
+  var h=location.hash.replace('#','');
+  state.tab=TABS.indexOf(h)>-1?h:'overzicht';
+  render();
+}
+function init(){
+  $('#e-cat').innerHTML=CATS.map(function(c){return '<option>'+esc(c)+'</option>'}).join('');
+  $('#h-act').innerHTML=ACTS.map(function(c){return '<option>'+esc(c)+'</option>'}).join('');
+  var t=todayISO(); ['#i-date','#e-date','#h-date'].forEach(function(s){$(s).value=t});
+  $('#yr').addEventListener('change',function(){state.year=Number(this.value);state.confirm=null;render()});
+  $('#e-amount').addEventListener('input',hintExp);
+  $('#e-cat').addEventListener('change',hintExp);
+  bindForm('inc');bindForm('exp');bindForm('hrs');
+  bindTable('inc','#t-inc');bindTable('exp','#t-exp');bindTable('hrs','#t-hrs');
+  window.addEventListener('hashchange',route);
+  route();
+  connect();
+}
+async function connect(){
+  var cl=window.claude, db=null, user=null, dl=null, uid=null;
+  try{
+    if(cl&&cl.use){
+      db=await cl.use('db'); user=await cl.use('user'); dl=await cl.use('downloads');
+      uid=user?await user.id():null;
+    }
+  }catch(e){}
+  if(dl){
+    var ex=$('#export'); ex.hidden=false;
+    ex.addEventListener('click',async function(){
+      try{ await dl.save({filename:'kasboek-'+state.year+'.csv',data:buildCsv()}); }
+      catch(e){ if(!e||e.code!=='declined'){state.banner='Exporteren lukte niet in deze weergave.';renderBanner()} }
+    });
+  }
+  if(!db||!uid){
+    state.loaded=true; state.banner='Opslaan is niet beschikbaar in deze weergave. Open de pagina in Claude om je administratie bij te houden.';
+    render(); return;
+  }
+  state.storage=true;
+  state.col=db.doc('data/users/'+uid+'/ledger').collection('entries');
+  var timer=setTimeout(function(){
+    state.banner=state.loaded?'Je gegevens zijn nog niet bijgewerkt. Wat je ziet kan verouderd zijn.':'Je gegevens zijn nog niet bereikbaar. Controleer je verbinding.';
+    renderBanner();
+  },10000);
+  state.col.onSnapshot(function(snap){
+    state.entries=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+    if(!snap.metadata.fromCache){ clearTimeout(timer); state.banner=''; state.loaded=true; }
+    else if(snap.size>0){ state.loaded=true; }
+    render();
+  },function(err){
+    clearTimeout(timer); state.loaded=true;
+    state.banner='Je gegevens konden niet worden geladen.';
+    render();
+  });
+}
+init();
+})();
+</script>
